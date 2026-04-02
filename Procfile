@@ -1,1 +1,1 @@
-web: gunicorn humorbot:app.app --log-file -
+web: gunicorn "humorbot:create_app()" --log-file -

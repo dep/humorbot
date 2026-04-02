@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=45"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "humorbot"
+version = "0.2.0"
+description = "Frinkiac and Morbotron Slack apps"
+license = "MIT"
+requires-python = ">=3.9"
+dependencies = [
+    "flask>=3.0,<4.0",
+    "slack-bolt>=1.18,<2.0",
+    "requests>=2.31,<3.0",
+    "thefuzz>=0.22,<1.0",
+    "python-Levenshtein>=0.25,<1.0",
+    "gunicorn>=22.0,<23.0",
+    "python-dotenv>=1.0,<2.0",
+    "psycopg2-binary>=2.9,<3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[project.scripts]
+humorbot = "humorbot:main"
+
+[tool.setuptools.packages.find]
+include = ["humorbot*"]
+
+[tool.setuptools.package-data]
+humorbot = ["templates/*", "static/*"]
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: tests that make real HTTP calls to Frinkiac/Morbotron APIs",
+]

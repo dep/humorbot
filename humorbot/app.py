@@ -1,148 +1,152 @@
 import logging
-import json
-import requests
-import six
-import random
+import re
 import os
 
-from scruffy import ConfigFile, PackageFile
-from flask import Flask, request, jsonify, render_template, redirect, send_from_directory
-from slackclient import SlackClient
+from flask import Flask, request, render_template, send_from_directory
+from slack_bolt import App
+from slack_bolt.adapter.flask import SlackRequestHandler
+from slack_bolt.oauth.oauth_settings import OAuthSettings
+from slack_sdk.oauth.installation_store import FileInstallationStore
+from slack_sdk.oauth.state_store import FileOAuthStateStore
+
+from . import config
 from .bot import Humorbot
 
 log = logging.getLogger()
-app = Flask(__name__)
-config = None
-hb = Humorbot()
 
 
-@app.route('/')
-def index():
-    """
-    Render the home page which allows the user to add the app to their Slack team
-    """
-    return render_template('index.html', morbo_client_id=str(config.morbo_client_id),
-                           frink_client_id=str(config.frink_client_id), installed=request.args.get('installed'))
+def create_bolt_app():
+    bolt_app = App(
+        signing_secret=config.SLACK_SIGNING_SECRET,
+        oauth_settings=OAuthSettings(
+            client_id=config.SLACK_CLIENT_ID,
+            client_secret=config.SLACK_CLIENT_SECRET,
+            scopes=['commands'],
+            installation_store=FileInstallationStore(base_dir='./data/installations'),
+            state_store=FileOAuthStateStore(expiration_seconds=600, base_dir='./data/states'),
+            install_path='/slack/install',
+            redirect_uri_path='/slack/oauth_redirect',
+        ),
+    )
+
+    hb = Humorbot()
+
+    # --- Command handlers ---
+
+    @bolt_app.command('/frink')
+    @bolt_app.command('/morbo')
+    def handle_command(ack, command, respond):
+        ack()
+        try:
+            cmd_name = command['command'].replace('/', '').strip()
+            res = hb.process_command(cmd_name, command)
+            respond(res)
+        except Exception as e:
+            log.exception('Exception processing command: {}'.format(e))
+            respond({'text': 'Error processing request.', 'response_type': 'ephemeral'})
+
+    # --- Action handlers ---
+
+    @bolt_app.action('send_image')
+    def handle_send(ack, body, respond):
+        ack()
+        try:
+            res = hb.send(body)
+            respond(res)
+        except Exception as e:
+            log.exception('Exception processing send action: {}'.format(e))
+            respond({'text': 'Error processing action.', 'response_type': 'ephemeral'})
+
+    @bolt_app.action('cancel')
+    def handle_cancel(ack, body, respond):
+        ack()
+        respond({'delete_original': True})
+
+    @bolt_app.action('edit_gif')
+    def handle_edit_gif(ack, body, respond):
+        ack()
+        try:
+            res = hb.update_gif(body)
+            respond(res)
+        except Exception as e:
+            log.exception('Exception processing edit action: {}'.format(e))
+            respond({'text': 'Error processing action.', 'response_type': 'ephemeral'})
+
+    @bolt_app.action('toggle_text')
+    def handle_toggle_text(ack, body, respond):
+        ack()
+        try:
+            res = hb.update_gif(body)
+            respond(res)
+        except Exception as e:
+            log.exception('Exception processing toggle action: {}'.format(e))
+            respond({'text': 'Error processing action.', 'response_type': 'ephemeral'})
+
+    @bolt_app.action(re.compile(r'set_start_\d+'))
+    def handle_set_start(ack, body, respond):
+        ack()
+        try:
+            res = hb.update_gif(body)
+            respond(res)
+        except Exception as e:
+            log.exception('Exception processing set_start action: {}'.format(e))
+            respond({'text': 'Error processing action.', 'response_type': 'ephemeral'})
+
+    @bolt_app.action(re.compile(r'set_end_\d+'))
+    def handle_set_end(ack, body, respond):
+        ack()
+        try:
+            res = hb.update_gif(body)
+            respond(res)
+        except Exception as e:
+            log.exception('Exception processing set_end action: {}'.format(e))
+            respond({'text': 'Error processing action.', 'response_type': 'ephemeral'})
+
+    return bolt_app
 
 
-@app.route('/favicon.ico')
-def favicon():
-    return send_from_directory(os.path.join(app.root_path, 'static'),
-                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
+def create_flask_app():
+    bolt_app = create_bolt_app()
+    bolt_handler = SlackRequestHandler(bolt_app)
+    flask_app = Flask(__name__)
 
+    # --- Flask routes for Bolt ---
 
-@app.route('/privacy')
-def privacy():
-    """
-    Display the privacy policy page.
-    """
-    return render_template('privacy.html')
+    @flask_app.route('/slack/events', methods=['POST'])
+    def slack_events():
+        return bolt_handler.handle(request)
 
+    @flask_app.route('/slack/install', methods=['GET'])
+    def slack_install():
+        return bolt_handler.handle(request)
 
-@app.route('/usage')
-def usage():
-    """
-    Display the usage page.
-    """
-    return render_template('usage.html')
+    @flask_app.route('/slack/oauth_redirect', methods=['GET'])
+    def slack_oauth_redirect():
+        return bolt_handler.handle(request)
 
+    # --- Flask web routes ---
 
-def verify_token(func):
-    """
-    Decorator to verify that the app token in the request belongs to one of the
-    ones passed through from the config.
-    """
-    def inner(*args, **kwargs):
-        no_match = jsonify({'text': "Token doesn't match", 'response_type': 'ephemeral'})
-        token = request.values.get('token')
-        if token:
-            if token in [config.morbo_token, config.frink_token]:
-                res = func(*args, **kwargs)
-            else:
-                res = no_match
-        else:
-            try:
-                d = json.loads(request.form.get('payload'))
-                if d['token'] in [config.morbo_token, config.frink_token]:
-                    res = func(*args, **kwargs)
-                else:
-                    res = no_match
-            except:
-                res = no_match
-        return res
+    @flask_app.route('/')
+    def index():
+        return render_template(
+            'index.html',
+            client_id=config.SLACK_CLIENT_ID,
+            installed=request.args.get('installed'),
+        )
 
-    return inner
+    @flask_app.route('/favicon.ico')
+    def favicon():
+        return send_from_directory(
+            os.path.join(flask_app.root_path, 'static'),
+            'favicon.ico', mimetype='image/vnd.microsoft.icon',
+        )
 
+    @flask_app.route('/privacy')
+    def privacy():
+        return render_template('privacy.html')
 
-@app.route('/slack', methods=['POST'], endpoint='slack')
-@verify_token
-def slack():
-    """
-    Handle initial / command from Slack
-    """
-    try:
-        command = request.values.get('command').replace('/', '').strip()
-        data = request.values.to_dict()
+    @flask_app.route('/usage')
+    def usage():
+        return render_template('usage.html')
 
-        log.debug("Got request: {}".format(data))
-
-        res = hb.process_command(command, data)
-    except Exception as e:
-        log.exception("Exception processing request: {}".format(e))
-        res = {'text': 'Error processing request.', 'response_type': 'ephemeral'}
-
-    log.debug("Returning response: {}".format(res))
-
-    return jsonify(res)
-
-
-@app.route('/slacktion', methods=['POST'], endpoint='slacktion')
-@verify_token
-def slacktion():
-    """
-    Handle slack message actions.
-    """
-    try:
-        data = json.loads(request.form.get('payload'))
-        log.debug('Got action with payload: {}'.format(data))
-
-        res = hb.process_action(data)
-    except Exception as e:
-        log.exception("Exception processing action: {}".format(e))
-        res = {'text': "Error processing action", 'response_type': 'ephemeral'}
-        raise
-
-    return jsonify(res)
-
-
-@app.route('/oauth/frink')
-@app.route('/oauth/morbo')
-@app.route('/oauth')
-def oauth():
-    """
-    OAuth endpoint
-    """
-    if request.path.endswith('frink'):
-        client_id = config.frink_client_id
-        client_secret = config.frink_client_secret
-    else:
-        client_id = config.morbo_client_id
-        client_secret = config.morbo_client_secret
-    if request.values.get('error'):
-        if request.values.get('error') == 'access_denied':
-            print("User canceled authorisation")
-        else:
-            print("An error occurred: {}".format(request.values.get('error')))
-        return redirect('/')
-    else:
-        d = {'code': request.args.get('code'), 'client_id': client_id, 'client_secret': client_secret}
-        url = 'https://slack.com/api/oauth.access?client_id={client_id}&client_secret={client_secret}&code={code}'.format(**d)
-        res = requests.get(url)
-        if res.ok:
-            d = res.json()
-            print("Successful authentication for user id {} in team ID {} ({})".format(d['user_id'], d['team_id'],
-                                                                                       d['team_name']))
-            return redirect('/?installed=true')
-        else:
-            print("Failed to request OAuth token: {}".format(res))
-            return redirect('/?installed=error')
+    return flask_app
