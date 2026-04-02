@@ -191,4 +191,8 @@ def create_flask_app():
     def support():
         return render_template('support.html')
 
+    @flask_app.route('/terms')
+    def terms():
+        return render_template('terms.html')
+
     return flask_app
