@@ -8,6 +8,7 @@ def _bool(val):
     return str(val).lower() in ('true', '1', 'yes')
 
 
+SLACK_BOT_TOKEN = os.environ.get('SLACK_BOT_TOKEN', '')
 SLACK_SIGNING_SECRET = os.environ.get('SLACK_SIGNING_SECRET', '')
 SLACK_CLIENT_ID = os.environ.get('SLACK_CLIENT_ID', '')
 SLACK_CLIENT_SECRET = os.environ.get('SLACK_CLIENT_SECRET', '')

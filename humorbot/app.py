@@ -16,18 +16,24 @@ log = logging.getLogger()
 
 
 def create_bolt_app():
-    bolt_app = App(
-        signing_secret=config.SLACK_SIGNING_SECRET,
-        oauth_settings=OAuthSettings(
-            client_id=config.SLACK_CLIENT_ID,
-            client_secret=config.SLACK_CLIENT_SECRET,
-            scopes=['commands'],
-            installation_store=FileInstallationStore(base_dir='./data/installations'),
-            state_store=FileOAuthStateStore(expiration_seconds=600, base_dir='./data/states'),
-            install_path='/slack/install',
-            redirect_uri_path='/slack/oauth_redirect',
-        ),
-    )
+    if config.SLACK_BOT_TOKEN:
+        bolt_app = App(
+            token=config.SLACK_BOT_TOKEN,
+            signing_secret=config.SLACK_SIGNING_SECRET,
+        )
+    else:
+        bolt_app = App(
+            signing_secret=config.SLACK_SIGNING_SECRET,
+            oauth_settings=OAuthSettings(
+                client_id=config.SLACK_CLIENT_ID,
+                client_secret=config.SLACK_CLIENT_SECRET,
+                scopes=['commands'],
+                installation_store=FileInstallationStore(base_dir='./data/installations'),
+                state_store=FileOAuthStateStore(expiration_seconds=600, base_dir='./data/states'),
+                install_path='/slack/install',
+                redirect_uri_path='/slack/oauth_redirect',
+            ),
+        )
 
     hb = Humorbot()
 
