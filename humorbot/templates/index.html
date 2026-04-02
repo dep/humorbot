@@ -67,6 +67,40 @@
     font-size: 1.05rem;
   }
 
+  .demo {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+    text-align: center;
+  }
+
+  .demo h2 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .demo .subtitle {
+    color: #666;
+    margin-bottom: 2.5rem;
+    font-size: 1.05rem;
+  }
+
+  .demo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+
+  .demo-grid img {
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  }
+
+  @media (max-width: 640px) {
+    .demo-grid { grid-template-columns: 1fr; }
+  }
+
   .cards {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -212,6 +246,15 @@
     <img src="https://a.slack-edge.com/80588/marketing/img/icons/icon_slack_hash_colored.png" alt="Slack">
     Add to Slack
   </a>
+</section>
+
+<section class="demo">
+  <h2>See it in action</h2>
+  <p class="subtitle">Screenshots and GIFs from your favourite shows, right in Slack.</p>
+  <div class="demo-grid">
+    <img src="{{ url_for('static', filename='demo-frink.png') }}" alt="Frinkiac bot in Slack showing Homer saying D-OHH">
+    <img src="{{ url_for('static', filename='demo-morbo.png') }}" alt="Morbotron bot in Slack showing Good News Everyone">
+  </div>
 </section>
 
 <section class="commands">
