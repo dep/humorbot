@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+  .page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+    line-height: 1.7;
+    color: #333;
+  }
+
+  .page h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .page h3 {
+    font-size: 1.2rem;
+    margin-top: 2rem;
+    margin-bottom: 0.5rem;
+    color: #1a1a2e;
+  }
+
+  .page p {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="page">
+  <h2>Support</h2>
+
+  <p>Need help with Humorbot? Here's how to get in touch.</p>
+
+  <h3>Email</h3>
+  <p>For general questions, issues, or feedback: <a href="mailto:danny@wanderingghost.us">danny@wanderingghost.us</a></p>
+
+  <h3>GitHub</h3>
+  <p>To report bugs or request features, open an issue on <a href="https://github.com/dep/humorbot/issues">GitHub</a>.</p>
+
+  <h3>Common issues</h3>
+  <p><b>The bot isn't responding to commands.</b> Make sure the app is installed in your workspace. Visit the <a href="/slack/install">install page</a> to add it.</p>
+  <p><b>I get "No match" for my search.</b> Frinkiac and Morbotron search by subtitle text, not by visual content. Try searching for a quote or line of dialogue from the scene you're looking for.</p>
+  <p><b>GIFs are loading slowly.</b> GIFs are generated on the fly by Frinkiac/Morbotron and can take a few seconds. Longer frame ranges will take longer to generate.</p>
+</section>
+{% endblock %}

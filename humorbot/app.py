@@ -187,4 +187,8 @@ def create_flask_app():
     def usage():
         return render_template('usage.html')
 
+    @flask_app.route('/support')
+    def support():
+        return render_template('support.html')
+
     return flask_app
