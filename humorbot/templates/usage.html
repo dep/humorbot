@@ -1,176 +1,104 @@
 {% extends "base.html" %}
 
+{% block head %}
+<style>
+  .page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+    line-height: 1.7;
+    color: #333;
+  }
+
+  .page h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .page h3 {
+    font-size: 1.3rem;
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+    color: #1a1a2e;
+  }
+
+  .page p {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+  }
+
+  .page code {
+    background: #f0f0f0;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 0.9rem;
+  }
+
+  .page ol, .page ul {
+    margin: 1rem 0 1rem 2rem;
+  }
+
+  .page li {
+    margin-bottom: 0.5rem;
+  }
+
+  .cmd-example {
+    background: #1a1a2e;
+    color: #fdd835;
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 0.95rem;
+    margin: 1rem 0;
+    overflow-x: auto;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<section id="usage">
-  <div class="container">
-    <h3>Usage</h4>
-    <p class="light">Humorbot adds the <code>/frink</code> and <code>/morbo</code> commands to your Slack team, depending on which app(s) are installed. These are used to search Frinkiac and Morbotron respectively.</p>
-    <p class="light">Frinkiac and Morbotron take your search query and match it against the show's subtitles. This is unlike other image plugins for Slack which generally use tags or titles (along with some weighting for the most relevant result). So, searching Morbotron for "Bender" may not actually get a pic of Bender as the first result, it may be a frame in which Bender's name is spoken by another character.</p>
-    <p class="light">Humorbot provides a few different ways to generate both still images and animated GIFs:</p>
-    <ol>
-      <li>"I'm feeling lucky" mode</li>
-      <li><code>random</code> mode</li>
-      <li><code>images</code> mode</li>
-      <li><code>gif</code> mode</li>
-    </ol>
-    <p class="light">The <code>/morbo help</code> and <code>/frink help</code> commands will display usage information.</p>
+<section class="page">
+  <h2>Usage</h2>
+  <p>Humorbot adds the <code>/frink</code> and <code>/morbo</code> commands to your Slack workspace. These search <a href="https://frinkiac.com">Frinkiac</a> (The Simpsons) and <a href="https://morbotron.com">Morbotron</a> (Futurama) respectively.</p>
 
-    <h5>"I'm feeling lucky" mode</h5>
-    <p class="light">Executed with just a search string, the <code>/frink</code> and <code>/morbo</code> commands will return the first result for the search string, and the dialogue will be used as a text overlay. For example:</p>
-    <div class="row">
-      <div class="col s12 m6">
-        <div class="card">
-          <div class="card-image">
-            <img src="http://i.imgur.com/B0UguK3.png">
-          </div>
-          <div class="card-action valign-wrapper">
-            <p class="light"><code>/frink computer hacking</code></p>
-          </div>
-        </div>
-      </div>
-      <div class="col s12 m6">
-        <div class="card">
-          <div class="card-image">
-            <img src="http://i.imgur.com/ncmTFIf.png">
-          </div>
-          <div class="card-action valign-wrapper">
-            <p class="light"><code>/morbo crushed pelvises</code></p>
-          </div>
-        </div>
-      </div>
-    </div>
-    <p class="light">Sometimes this is exactly what you want, and can yield some pretty hilarious results when it's not.</p>
+  <p>Searches match against the show's subtitles. So searching for "Bender" may return a frame where another character says his name, rather than a frame showing Bender. Use <code>/frink help</code> or <code>/morbo help</code> to see quick usage info in Slack.</p>
 
-    <p class="light">If you want to provide different a different text overlay, separate the search string and text overlay with <code>|</code>. For example:</p>
-    <div class="row">
-      <div class="col s12 m6">
-        <div class="card">
-          <div class="card-image">
-            <img src="http://i.imgur.com/TWlCg4B.png">
-          </div>
-          <div class="card-action valign-wrapper">
-            <p class="light"><code>/frink computer hacking | all this slack bot dev is making me thirsty</code></p>
-          </div>
-        </div>
-      </div>
-      <div class="col s12 m6">
-        <div class="card">
-          <div class="card-image">
-            <img src="http://i.imgur.com/9nlf48z.png">
-          </div>
-          <div class="card-action valign-wrapper">
-            <p class="light"><code>/morbo do the hustle | do the bartman</code></p>
-          </div>
-        </div>
-      </div>
-    </div>
+  <h3>"I'm feeling lucky" mode</h3>
+  <p>Just type a search query to get the first matching result with its subtitle as the text overlay:</p>
+  <div class="cmd-example">/frink computer hacking</div>
+  <div class="cmd-example">/morbo crushed pelvises</div>
 
-    <p class="light">This applies to all the other command types as well. Anywhere there's a search string, you can provide a search string and text overlay separated by <code>|</code>.</p>
+  <h3>Custom text overlays</h3>
+  <p>Separate your search query and custom overlay text with <code>|</code>:</p>
+  <div class="cmd-example">/frink computer hacking | all this slack bot dev is making me thirsty</div>
+  <div class="cmd-example">/morbo do the hustle | do the bartman</div>
+  <p>Use a trailing <code>|</code> with nothing after it to remove the overlay entirely:</p>
+  <div class="cmd-example">/frink homer |</div>
 
-    <h5><code>random</code> mode</h5>
-    <p class="light">If <code>random</code> is provided as the first argument in the query, a random frame from the search results will be chosen, and immediately sent to the channel. For example:</p>
-    <div class="row">
-      <div class="col s12 m6">
-        <div class="card">
-          <div class="card-image">
-            <img src="http://i.imgur.com/zQ0rYjN.png">
-          </div>
-          <div class="card-action valign-wrapper">
-            <p class="light"><code>/frink random d'oh</code></p>
-          </div>
-        </div>
-      </div>
-      <div class="col s12 m6">
-        <div class="card">
-          <div class="card-image">
-            <img src="http://i.imgur.com/8jKfDVR.png">
-          </div>
-          <div class="card-action valign-wrapper">
-            <p class="light"><code>/morbo random good news</code></p>
-          </div>
-        </div>
-      </div>
-    </div>
+  <h3><code>random</code> mode</h3>
+  <p>Returns a random frame from the search results, sent directly to the channel:</p>
+  <div class="cmd-example">/frink random d'oh</div>
 
-    <h5><code>images</code> mode</h5>
-    <p class="light">If <code>images</code> is provided as the first argument in the query, you will be presented with a selection of matching frames in what Slack calls an "ephemeral" message (which is displayed only to you, and not sent to the channel). Each frame has a <code>Send</code> button which, when pressed, will dismiss the ephemeral message and send the selected frame to channel. At the bottom there is a <code>Cancel</code> button which will dismiss the ephemeral message, and nothing will be sent to channel. For example:</p>
-    <div class="row">
-      <div class="col s12 m6">
-        <div class="card">
-          <div class="card-image">
-            <img src="http://i.imgur.com/jskiO0M.png">
-          </div>
-          <div class="card-action valign-wrapper">
-            <p class="light">The ephemeral message presented on initially executing <code>/morbo images seymour</code></p>
-          </div>
-        </div>
-      </div>
-      <div class="col s12 m6">
-        <div class="card">
-          <div class="card-image">
-            <img src="http://i.imgur.com/AB4cyoh.png">
-          </div>
-          <div class="card-action valign-wrapper">
-            <p class="light">The message sent to channel when an image is chosen and the <code>Send</code> button pressed.</p>
-          </div>
-        </div>
-      </div>
-    </div>
+  <h3><code>images</code> mode</h3>
+  <p>Shows you a private selection of up to 10 matching frames, each with a <b>Send</b> button. Pick the one you like and it gets posted to the channel. Hit <b>Cancel</b> to dismiss without sending.</p>
+  <div class="cmd-example">/morbo images seymour</div>
 
-    <h5><code>gif</code> mode</h5>
-    <p class="light">If <code>gif</code> is provided as the first argument in the query, the first search result will be selected (the same as "I'm feeling lucky" mode) and then a set of context frames (4 seconds either side) will be retrieved. An animated GIF will be built from these frames, and presented in an ephemeral message with <code>Send</code>, <code>Edit</code> and <code>Cancel</code> buttons. For example:</p>
-    <div class="row">
-      <div class="col s12 m6">
-        <div class="card">
-          <div class="card-image">
-            <img src="http://i.imgur.com/0UsVMO9.png">
-          </div>
-          <div class="card-action valign-wrapper">
-            <p class="light">The ephemeral message presented on initially executing <code>/morbo gif do the hustle</code></p>
-          </div>
-        </div>
-      </div>
-      <div class="col s12 m6">
-        <div class="card">
-          <div class="card-image">
-            <img src="http://i.imgur.com/UfVQ5LA.png">
-          </div>
-          <div class="card-action valign-wrapper">
-            <p class="light">The message sent to channel upon pressing <code>Send</code></p>
-          </div>
-        </div>
-      </div>
-    </div>
+  <h3><code>gif</code> mode</h3>
+  <p>Generates an animated GIF from frames around the first search result (4 seconds on each side). You get a private preview with three options:</p>
+  <ul>
+    <li><b>Send</b> - post the GIF to the channel</li>
+    <li><b>Edit</b> - open the frame editor to adjust start/end frames and toggle the text overlay</li>
+    <li><b>Cancel</b> - dismiss without sending</li>
+  </ul>
+  <div class="cmd-example">/frink gif dental plan</div>
 
-    <p><code>Send</code> will dismiss the ephemeral message and send the GIF to channel as is, <code>Cancel</code> will just dismiss the ephemeral message, sending nothing to channel, and <code>Edit</code> will present a new ephemeral message containing an interface with which the user can edit the GIF parameters. This interface looks like this:
+  <p>In the editor, each frame shows a thumbnail with <b>Start frame</b> and <b>End frame</b> buttons. The selected range is marked with a green indicator. You can also toggle the text overlay on or off.</p>
 
-    <div class="row">
-      <div class="col s12 m6">
-        <div class="card">
-          <div class="card-image">
-            <img src="http://i.imgur.com/gr6AU2y.png">
-          </div>
-          <div class="card-action valign-wrapper">
-            <p class="light">The editing interface presented upon pressing the <code>Edit</code> button.</p>
-          </div>
-        </div>
-      </div>
-      <div class="col s12 m6">
-        <div class="card">
-          <div class="card-image">
-            <img src="http://i.imgur.com/6xc35TS.png">
-          </div>
-          <div class="card-action valign-wrapper">
-            <p class="light">The editing interface after selecting a different start frame.</p>
-          </div>
-        </div>
-      </div>
-    </div>
+  <h3><code>gifs</code> mode</h3>
+  <p>Like <code>images</code> but for GIFs - shows a selection of animated GIFs from different matching scenes:</p>
+  <div class="cmd-example">/morbo gifs seymour</div>
 
-    <p>The <code>Start frame</code> and <code>End frame</code> buttons on each frame allow you to designate the frames at which to start and end the animated GIF. The currently selected frame range will be highlighted with a green stripe down the left hand side of the frame rows in the editing interface. At the bottom, the <code>Send</code> button will dismiss the editing interface and send the edited GIF to channel, the <code>Cancel</code> button will dismiss the editing interface, sending nothing to channel, and the <code>Hide text</code> button will hide the text overlay in the GIF.</p>
-
-    <h5>Support</h5>
-    <p>If you have feature requests or issues, please open a ticket on <a href="https://github.com/snare/humorbot/issues">GitHub</a>, get at snare on <a href="https://twitter.com/snare">twitter</a> or send an <a href="mailto:humorbot@ho.ax">email</a>.</p>
-  </div>
+  <h3>Support</h3>
+  <p>Feature requests or issues? Open a ticket on <a href="https://github.com/dep/humorbot/issues">GitHub</a>.</p>
 </section>
 {% endblock %}

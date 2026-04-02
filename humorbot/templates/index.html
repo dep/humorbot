@@ -1,46 +1,281 @@
 {% extends "base.html" %}
 
+{% block head %}
+<style>
+  .hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #fff;
+    text-align: center;
+    padding: 5rem 2rem 4rem;
+  }
+
+  .hero h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 0.5rem;
+  }
+
+  .hero h1 .yellow { color: #fdd835; }
+  .hero h1 .pink { color: #ff6f91; }
+
+  .hero .tagline {
+    font-size: 1.3rem;
+    color: #b0bec5;
+    margin-bottom: 2.5rem;
+    font-weight: 300;
+  }
+
+  .hero .cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #fff;
+    color: #1a1a2e;
+    padding: 0.85rem 2rem;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+
+  .hero .cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    text-decoration: none;
+  }
+
+  .hero .cta img { height: 24px; }
+
+  .commands {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+  }
+
+  .commands h2 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .commands .subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 3rem;
+    font-size: 1.05rem;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+
+  @media (max-width: 640px) {
+    .cards { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 2.5rem; }
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.12);
+  }
+
+  .card img {
+    width: 100%;
+    display: block;
+  }
+
+  .card .info {
+    padding: 1.5rem;
+  }
+
+  .card h3 {
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .card .cmd {
+    display: inline-block;
+    background: #f0f0f0;
+    color: #333;
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 0.85rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+  }
+
+  .card p {
+    color: #555;
+    line-height: 1.6;
+    font-size: 0.95rem;
+  }
+
+  .examples {
+    background: #1a1a2e;
+    color: #ccc;
+    padding: 4rem 2rem;
+    text-align: center;
+  }
+
+  .examples h2 {
+    color: #fff;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .example-grid {
+    max-width: 700px;
+    margin: 0 auto;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .example-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    align-items: center;
+    text-align: left;
+    padding: 1rem 1.5rem;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+  }
+
+  @media (max-width: 640px) {
+    .example-row { grid-template-columns: 1fr; }
+  }
+
+  .example-row code {
+    font-family: 'SF Mono', Menlo, monospace;
+    color: #fdd835;
+    font-size: 0.95rem;
+  }
+
+  .example-row .desc {
+    color: #999;
+    font-size: 0.9rem;
+  }
+
+  .features {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+    text-align: center;
+  }
+
+  .features h2 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    text-align: center;
+  }
+
+  @media (max-width: 640px) {
+    .feature-grid { grid-template-columns: 1fr; }
+  }
+
+  .feature-grid .item h4 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .feature-grid .item p {
+    color: #666;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<section id="main">
-  <div class="container">
-    <div class="section no-pad-bot" id="index-banner">
-      <div class="container">
-        <br><br>
-        <h1 class="header center teal-text">humorbot</h1>
-        <div class="row center">
-          <h5 class="header col s12 light">Frinkiac and Morbotron apps for Slack.</h5>
-        </div>
-        <div class="row center">
-          <a href="/slack/install"><img alt="Add to Slack" height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png" srcset="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x" /></a>
-        </div>
+<section class="hero">
+  <h1><span class="yellow">Simpsons</span> & <span class="pink">Futurama</span> in Slack</h1>
+  <p class="tagline">Search, share, and create memes and GIFs — right from your Slack workspace.</p>
+  <a class="cta" href="/slack/install">
+    <img src="https://a.slack-edge.com/80588/marketing/img/icons/icon_slack_hash_colored.png" alt="Slack">
+    Add to Slack
+  </a>
+</section>
+
+<section class="commands">
+  <h2>Two shows. Two commands.</h2>
+  <p class="subtitle">Powered by Frinkiac and Morbotron's massive screenshot databases.</p>
+  <div class="cards">
+    <div class="card">
+      <img src="https://frinkiac.com/meme/S06E19/683465.jpg?b64lines=SSBmb3Igb25lIHdlbGNvbWUgb3VyCm5ldyBpbnNlY3Qgb3ZlcmxvcmRz" alt="Simpsons screenshot">
+      <div class="info">
+        <h3>The Simpsons</h3>
+        <span class="cmd">/frink</span>
+        <p>Search every episode of The Simpsons. Generate still images with caption overlays or animated GIFs.</p>
       </div>
     </div>
-    <div class="row">
-      <div class="col s12 m6">
-        <div class="card">
-          <div class="card-content">
-            <h5>Frinkiac</h5>
-            <p class="light"><a href="https://frinkiac.com">Frinkiac</a> is a neat app for generating image memes and animated GIFs from The Simpsons. Use the <code>/frink</code> command in Slack to search and share Simpsons screenshots.</p>
-          </div>
-          <div class="card-content">
-            <img class="responsive-img" src="https://i.imgur.com/zQ0rYjN.png">
-          </div>
-        </div>
-      </div>
-      <div class="col s12 m6">
-        <div class="card">
-          <div class="card-content">
-            <h5>Morbotron</h5>
-            <p class="light"><a href="https://morbotron.com">Morbotron</a> is like Frinkiac, but for Futurama. Use the <code>/morbo</code> command in Slack to search and share Futurama screenshots.</p>
-          </div>
-          <div class="card-content">
-            <img class="responsive-img" src="https://i.imgur.com/8jKfDVR.png">
-          </div>
-        </div>
+    <div class="card">
+      <img src="https://morbotron.com/meme/S02E03/845294.jpg?b64lines=U2h1dCB1cCBhbmQgdGFrZSBteSBtb25leSE=" alt="Futurama screenshot">
+      <div class="info">
+        <h3>Futurama</h3>
+        <span class="cmd">/morbo</span>
+        <p>Search every episode of Futurama. Same features — stills, text overlays, GIFs, and a GIF editor.</p>
       </div>
     </div>
-    <div class="row">
-      <p class="light"><b>Note:</b> snare did not build <a href="https://morbotron.com">Morbotron</a> or <a href="https://frinkiac.com">Frinkiac</a>, just the Slack apps. Please direct all enquiries about (and internet hugs related to) <a href="https://morbotron.com">Morbotron</a> and <a href="https://frinkiac.com">Frinkiac</a> to their developers - the real heroes of this story. However, if you have feature requests, comments, insults, death threats, etc. for the Slack apps, feel free to open an issue on <a href="https://github.com/snare/humorbot/issues">GitHub</a>. If, for any reason, you're not completely satisfied, I hate you.
+  </div>
+</section>
+
+<section class="examples">
+  <h2>How it works</h2>
+  <div class="example-grid">
+    <div class="example-row">
+      <code>/frink dental plan</code>
+      <span class="desc">Search and share the best match</span>
+    </div>
+    <div class="example-row">
+      <code>/morbo gif shut up and take my money</code>
+      <span class="desc">Generate an animated GIF</span>
+    </div>
+    <div class="example-row">
+      <code>/frink images homer</code>
+      <span class="desc">Browse multiple results and pick one</span>
+    </div>
+    <div class="example-row">
+      <code>/frink steamed hams | aurora borealis</code>
+      <span class="desc">Custom text overlay</span>
+    </div>
+  </div>
+</section>
+
+<section class="features">
+  <h2>Features</h2>
+  <div class="feature-grid">
+    <div class="item">
+      <h4>&#128247;</h4>
+      <h4>Stills</h4>
+      <p>Instantly share perfectly-captioned screenshots from any episode.</p>
+    </div>
+    <div class="item">
+      <h4>&#127910;</h4>
+      <h4>GIFs</h4>
+      <p>Generate animated GIFs with a built-in editor to pick your start and end frames.</p>
+    </div>
+    <div class="item">
+      <h4>&#9999;&#65039;</h4>
+      <h4>Custom text</h4>
+      <p>Override the subtitles with your own text using the <code>|</code> separator.</p>
     </div>
   </div>
 </section>

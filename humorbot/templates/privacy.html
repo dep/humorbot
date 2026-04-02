@@ -1,26 +1,54 @@
 {% extends "base.html" %}
 
+{% block head %}
+<style>
+  .page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+    line-height: 1.7;
+    color: #333;
+  }
+
+  .page h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .page h3 {
+    font-size: 1.2rem;
+    margin-top: 2rem;
+    margin-bottom: 0.5rem;
+    color: #1a1a2e;
+  }
+
+  .page p {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-  <div class="container">
-    <h4>Privacy Policy</h4>
-    <p>
-    Your privacy is critically important to us (royal we for <a href="https://github.com/snare/">snare</a>). We have a few fundamental principles:
-    <ol>
-        <li>We don't collect any information about you from Slack, except that which is needed to provide you with humorous Simpsons and Futurama-related images.</li>
-        <li>We don't share your personal information with anyone except to comply with the law, develop our products, or protect our rights.</li>
-        <li>We don't store personal information on our servers unless required for the on-going operation of one of our services.</li>
-    </ol>
-    <p>Humorbot (“<b>humorbot</b>”) operates Slack plugins including <a href="/">Frinkiac and Morbotron</a>. It is humorbot’s policy to respect your privacy regarding any information we may collect while operating our websites. Please do not mistake this for Slack's privacy policy.</p>
-    </p>
-    <h5>Website Visitors</h5>
-    <p>Like most website operators, humorbot collects non-personally-identifying information of the sort that web browsers and servers typically make available, such as the browser type, language preference, referring site, and the date and time of each visitor request. humorbot's purpose in collecting non-personally identifying information is to better understand how humorbot's visitors use its website.</p>
-    <h5>Gathering of Personally-Identifying Information</h5>
-    <p>Users of humorbot's Slack plugins choose to interact with humorbot in ways that require humorbot to gather personally-identifying information. Specifically, humorbot collects the user's ID, team ID and team name from Slack. Additionally, it collects requests to generate images, typically representing the text the user is requesting to appear in the image. Collection in this case means going into a log file on Heroku. humorbot collects such information only insofar as is necessary or appropriate to fulfill the purpose of the visitor’s interaction with humorbot, which should almost exclusively be in the form of creating dank memes. humorbot does not disclose personally-identifying information.</p>
-    <h5>Cookies</h5>
-    <p>A cookie is a string of information that a website stores on a visitor’s computer, and that the visitor’s browser provides to the website each time the visitor returns. humorbot's website uses cookies to help identify and track visitors, their usage of humorbot's website, and their website access preferences. humorbot visitors who do not wish to have cookies placed on their computers should set their browsers to refuse cookies before using humorbot’s websites, with the drawback that certain features of humorbot’s websites may not function properly without the aid of cookies.</p>
-    <h5>Business Transfers</h5>
-    <p>In the event that snare decides to stop working on humorbot, access to log files in Heroku will be revoked, leaving humorbot user information floating in the void. In the astronomically unlikely event that humorbot is acquired, user information would be one of the assets that is transferred or acquired by a third party. You acknowledge that such transfers may occur, and that any acquirer of humorbot may continue to use your personal information as set forth in this policy.</p>
-    <h5>Privacy Policy Changes</h5>
-    <p>Although most changes are likely to be minor, humorbot may change its Privacy Policy from time to time, and in humorbot’s sole discretion. humorbot encourages visitors to frequently check this page for any changes to its Privacy Policy. Your continued use of humorbot's Slack plugins after any change in this Privacy Policy will constitute your acceptance of such change.</p>
-  </div>
+<section class="page">
+  <h2>Privacy Policy</h2>
+
+  <p>Humorbot takes your privacy seriously. Here's what you need to know.</p>
+
+  <h3>What we collect</h3>
+  <p>When you install Humorbot, Slack provides us with an OAuth token that allows the app to respond to slash commands in your workspace. We store this token so the app can function.</p>
+  <p>When you use a command, Slack sends us your username, team info, and the command text. We log this temporarily for debugging purposes. We do not store your messages, search history, or personal information permanently.</p>
+
+  <h3>What we don't do</h3>
+  <p>We don't sell, share, or transfer your data to third parties. We don't read your Slack messages. We don't use tracking cookies. The app only activates when you explicitly invoke a slash command.</p>
+
+  <h3>Third-party services</h3>
+  <p>Your search queries are sent to <a href="https://frinkiac.com">Frinkiac</a> and <a href="https://morbotron.com">Morbotron</a> to generate screenshots and GIFs. These services have their own privacy policies. The app is hosted on <a href="https://heroku.com">Heroku</a>.</p>
+
+  <h3>Data removal</h3>
+  <p>Removing the app from your Slack workspace revokes the OAuth token. If you'd like your installation data removed from our database, open an issue on <a href="https://github.com/dep/humorbot/issues">GitHub</a>.</p>
+
+  <h3>Changes</h3>
+  <p>This policy may be updated from time to time. Significant changes will be noted on the project's GitHub page.</p>
+</section>
 {% endblock %}
