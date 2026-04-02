@@ -6,13 +6,44 @@ from flask import Flask, request, render_template, send_from_directory
 from slack_bolt import App
 from slack_bolt.adapter.flask import SlackRequestHandler
 from slack_bolt.oauth.oauth_settings import OAuthSettings
-from slack_sdk.oauth.installation_store import FileInstallationStore
-from slack_sdk.oauth.state_store import FileOAuthStateStore
 
 from . import config
 from .bot import Humorbot
 
 log = logging.getLogger()
+
+
+def _build_installation_stores():
+    """Build installation and state stores based on available config."""
+    if config.DATABASE_URL:
+        from sqlalchemy import create_engine
+        from slack_sdk.oauth.installation_store.sqlalchemy import SQLAlchemyInstallationStore
+        from slack_sdk.oauth.state_store.sqlalchemy import SQLAlchemyOAuthStateStore
+
+        # Heroku uses postgres:// but SQLAlchemy 2.x requires postgresql://
+        db_url = config.DATABASE_URL
+        if db_url.startswith('postgres://'):
+            db_url = db_url.replace('postgres://', 'postgresql://', 1)
+
+        engine = create_engine(db_url)
+        installation_store = SQLAlchemyInstallationStore(
+            client_id=config.SLACK_CLIENT_ID,
+            engine=engine,
+        )
+        state_store = SQLAlchemyOAuthStateStore(
+            expiration_seconds=600,
+            engine=engine,
+        )
+        installation_store.create_tables()
+        state_store.create_tables()
+        return installation_store, state_store
+    else:
+        from slack_sdk.oauth.installation_store import FileInstallationStore
+        from slack_sdk.oauth.state_store import FileOAuthStateStore
+        return (
+            FileInstallationStore(base_dir='./data/installations'),
+            FileOAuthStateStore(expiration_seconds=600, base_dir='./data/states'),
+        )
 
 
 def create_bolt_app():
@@ -22,14 +53,15 @@ def create_bolt_app():
             signing_secret=config.SLACK_SIGNING_SECRET,
         )
     else:
+        installation_store, state_store = _build_installation_stores()
         bolt_app = App(
             signing_secret=config.SLACK_SIGNING_SECRET,
             oauth_settings=OAuthSettings(
                 client_id=config.SLACK_CLIENT_ID,
                 client_secret=config.SLACK_CLIENT_SECRET,
                 scopes=['commands'],
-                installation_store=FileInstallationStore(base_dir='./data/installations'),
-                state_store=FileOAuthStateStore(expiration_seconds=600, base_dir='./data/states'),
+                installation_store=installation_store,
+                state_store=state_store,
                 install_path='/slack/install',
                 redirect_uri_path='/slack/oauth_redirect',
             ),
