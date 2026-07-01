@@ -8,6 +8,7 @@ from thefuzz import process
 MORBO_BASE_URL = 'https://morbotron.com'
 FRINK_BASE_URL = 'https://frinkiac.com'
 WRAP_WIDTH = 24
+REQUEST_TIMEOUT = 5
 
 log = logging.getLogger()
 
@@ -30,7 +31,7 @@ class Frinkotron:
             raise Exception('Wat')
 
     def search(self, key):
-        res = requests.get('{}/api/search?q={}'.format(self.base, key))
+        res = requests.get('{}/api/search?q={}'.format(self.base, key), timeout=REQUEST_TIMEOUT)
         if res.ok:
             return res.json()
         else:
@@ -40,7 +41,7 @@ class Frinkotron:
         url = '{base}/api/frames/{episode}/{ts}/{before}/{after}'.format(
             base=self.base, episode=episode, ts=timestamp, before=before, after=after
         )
-        res = requests.get(url)
+        res = requests.get(url, timeout=REQUEST_TIMEOUT)
         if res.ok:
             return res.json()
         else:
@@ -50,7 +51,7 @@ class Frinkotron:
         url = '{base}/api/caption?e={episode}&t={timestamp}'.format(
             base=self.base, episode=episode, timestamp=timestamp
         )
-        res = requests.get(url)
+        res = requests.get(url, timeout=REQUEST_TIMEOUT)
         if res.ok:
             return res.json()['Subtitles']
         else:

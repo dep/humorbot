@@ -69,12 +69,12 @@ def create_bolt_app():
 
     hb = Humorbot()
 
+    def ack_immediately(ack):
+        ack()
+
     # --- Command handlers ---
 
-    @bolt_app.command('/frink')
-    @bolt_app.command('/morbo')
-    def handle_command(ack, command, respond):
-        ack()
+    def process_command_lazy(command, respond):
         try:
             cmd_name = command['command'].replace('/', '').strip()
             res = hb.process_command(cmd_name, command)
@@ -83,11 +83,12 @@ def create_bolt_app():
             log.exception('Exception processing command: {}'.format(e))
             respond({'text': 'Error processing request.', 'response_type': 'ephemeral'})
 
+    bolt_app.command('/frink')(ack=ack_immediately, lazy=[process_command_lazy])
+    bolt_app.command('/morbo')(ack=ack_immediately, lazy=[process_command_lazy])
+
     # --- Action handlers ---
 
-    @bolt_app.action('send_image')
-    def handle_send(ack, body, respond):
-        ack()
+    def handle_send_lazy(body, respond):
         try:
             res = hb.send(body)
             respond(res)
@@ -95,50 +96,37 @@ def create_bolt_app():
             log.exception('Exception processing send action: {}'.format(e))
             respond({'text': 'Error processing action.', 'response_type': 'ephemeral'})
 
-    @bolt_app.action('cancel')
-    def handle_cancel(ack, body, respond):
-        ack()
+    bolt_app.action('send_image')(ack=ack_immediately, lazy=[handle_send_lazy])
+
+    def handle_cancel_lazy(respond):
         respond({'delete_original': True})
 
-    @bolt_app.action('edit_gif')
-    def handle_edit_gif(ack, body, respond):
-        ack()
+    bolt_app.action('cancel')(ack=ack_immediately, lazy=[handle_cancel_lazy])
+
+    def handle_update_gif_lazy(body, respond, action_name):
         try:
             res = hb.update_gif(body)
             respond(res)
         except Exception as e:
-            log.exception('Exception processing edit action: {}'.format(e))
+            log.exception('Exception processing {} action: {}'.format(action_name, e))
             respond({'text': 'Error processing action.', 'response_type': 'ephemeral'})
 
-    @bolt_app.action('toggle_text')
-    def handle_toggle_text(ack, body, respond):
-        ack()
-        try:
-            res = hb.update_gif(body)
-            respond(res)
-        except Exception as e:
-            log.exception('Exception processing toggle action: {}'.format(e))
-            respond({'text': 'Error processing action.', 'response_type': 'ephemeral'})
-
-    @bolt_app.action(re.compile(r'set_start_\d+'))
-    def handle_set_start(ack, body, respond):
-        ack()
-        try:
-            res = hb.update_gif(body)
-            respond(res)
-        except Exception as e:
-            log.exception('Exception processing set_start action: {}'.format(e))
-            respond({'text': 'Error processing action.', 'response_type': 'ephemeral'})
-
-    @bolt_app.action(re.compile(r'set_end_\d+'))
-    def handle_set_end(ack, body, respond):
-        ack()
-        try:
-            res = hb.update_gif(body)
-            respond(res)
-        except Exception as e:
-            log.exception('Exception processing set_end action: {}'.format(e))
-            respond({'text': 'Error processing action.', 'response_type': 'ephemeral'})
+    bolt_app.action('edit_gif')(
+        ack=ack_immediately,
+        lazy=[lambda body, respond: handle_update_gif_lazy(body, respond, 'edit_gif')],
+    )
+    bolt_app.action('toggle_text')(
+        ack=ack_immediately,
+        lazy=[lambda body, respond: handle_update_gif_lazy(body, respond, 'toggle_text')],
+    )
+    bolt_app.action(re.compile(r'set_start_\d+'))(
+        ack=ack_immediately,
+        lazy=[lambda body, respond: handle_update_gif_lazy(body, respond, 'set_start')],
+    )
+    bolt_app.action(re.compile(r'set_end_\d+'))(
+        ack=ack_immediately,
+        lazy=[lambda body, respond: handle_update_gif_lazy(body, respond, 'set_end')],
+    )
 
     return bolt_app
 
