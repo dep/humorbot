@@ -53,7 +53,7 @@ def test_image(hb):
 
     res = hb.image('someone', 'do the hustle', 'lol')
     assert res['response_type'] == 'in_channel'
-    assert 'b64lines=' in res['blocks'][1]['image_url']
+    assert 'morbotron.com' in res['blocks'][1]['image_url']
 
 
 @pytest.mark.integration

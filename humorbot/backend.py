@@ -1,14 +1,15 @@
 import requests
-import base64
-import textwrap
+import json
 import re
 import logging
 from thefuzz import process
 
 MORBO_BASE_URL = 'https://morbotron.com'
 FRINK_BASE_URL = 'https://frinkiac.com'
-WRAP_WIDTH = 24
 REQUEST_TIMEOUT = 5
+RENDER_TIMEOUT = 30
+DEFAULT_FONT = 'akbar'
+DEFAULT_COLOR = [255, 255, 255, 255]
 
 log = logging.getLogger()
 
@@ -61,23 +62,48 @@ class Frinkotron:
         caps = self.captions(episode, timestamp)
         return process.extract(query, [c['Content'] for c in caps], limit=1)[0][0]
 
-    def image_url(self, episode, timestamp, text=''):
-        b64 = base64.b64encode(
-            '\n'.join(textwrap.wrap(text, WRAP_WIDTH)).encode('utf-8'), b'-_'
-        ).decode('ascii')
-        param = '?b64lines={}'.format(b64) if len(text) else ''
-        return '{base}/meme/{episode}/{timestamp}.jpg{param}'.format(
-            base=self.base, episode=episode, timestamp=timestamp, param=param
+    def _render(self, episode, start, end, text=''):
+        overlays = []
+        if text:
+            overlays.append({
+                'text': text,
+                'font': DEFAULT_FONT,
+                'size': 0,
+                'color': DEFAULT_COLOR,
+                'x': 50,
+                'y': 97,
+                'text_align': 'c',
+                'all_caps': False,
+                'start': 0,
+                'end': end - start,
+            })
+
+        res = requests.post(
+            '{}/api/render/gif/stream'.format(self.base),
+            json=[{'episode': episode, 'start': start, 'end': end, 'overlays': overlays}],
+            stream=True,
+            timeout=RENDER_TIMEOUT,
         )
+        if not res.ok:
+            raise RequestFailedException('Render request failed with status {}'.format(res.status_code))
+
+        for line in res.iter_lines(decode_unicode=True):
+            if not line:
+                continue
+            event = json.loads(line)
+            if 'error' in event:
+                raise RequestFailedException(event['error'])
+            if 'url' in event:
+                url = event['url']
+                return url if url.startswith('http') else '{}{}'.format(self.base, url)
+
+        raise RequestFailedException('Render stream ended without a result')
+
+    def image_url(self, episode, timestamp, text=''):
+        return self._render(episode, timestamp, timestamp + 1000, text)
 
     def gif_url(self, episode, start, end, text=''):
-        b64 = base64.b64encode(
-            '\n'.join(textwrap.wrap(text, WRAP_WIDTH)).encode('utf-8'), b'-_'
-        ).decode('ascii')
-        param = '?b64lines={}'.format(b64) if len(text) else ''
-        return '{base}/gif/{episode}/{start}/{end}.gif{param}'.format(
-            base=self.base, episode=episode, start=start, end=end, param=param
-        )
+        return self._render(episode, start, end, text)
 
     def thumb_url(self, episode, timestamp):
         return '{base}/img/{episode}/{timestamp}/small.jpg'.format(

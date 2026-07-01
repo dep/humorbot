@@ -2,6 +2,7 @@ import re
 import json
 import logging
 from random import choice
+from concurrent.futures import ThreadPoolExecutor
 from .backend import Frinkiac, Morbotron
 
 log = logging.getLogger()
@@ -49,6 +50,7 @@ Generate a selection of GIFs for _rebigulator_:
 MAX_IMAGES = 10
 MAX_GIFS = 5
 MAX_EDITOR_FRAMES = 20
+RENDER_CONCURRENCY = 3
 
 
 class Humorbot:
@@ -144,15 +146,18 @@ class Humorbot:
 
     def images(self, username, query, overlay='', command='morbo'):
         backend = self.backend(command)
-        search_result = backend.search(query)
+        search_result = backend.search(query)[:MAX_IMAGES]
+
+        def render(r):
+            ol = overlay or backend.caption_for_query(r['Episode'], r['Timestamp'], query)
+            return ol, backend.image_url(r['Episode'], r['Timestamp'], ol)
+
+        with ThreadPoolExecutor(max_workers=RENDER_CONCURRENCY) as executor:
+            rendered = list(executor.map(render, search_result))
 
         blocks = []
-        ol = overlay
-        for r in search_result[:min(MAX_IMAGES, len(search_result))]:
+        for r, (ol, url) in zip(search_result, rendered):
             args = 'images {} | {}'.format(query, overlay) if overlay else 'images {}'.format(query)
-            if not overlay:
-                ol = backend.caption_for_query(r['Episode'], r['Timestamp'], query)
-            url = backend.image_url(r['Episode'], r['Timestamp'], ol)
             blocks.append({
                 'type': 'image',
                 'image_url': url,
@@ -261,56 +266,62 @@ class Humorbot:
 
     def gifs(self, username, query, overlay='', command='morbo'):
         backend = self.backend(command)
-        search_result = backend.search(query)
+        search_result = backend.search(query)[:MAX_GIFS]
+
+        def render(r):
+            context = backend.context_frames(r['Episode'], r['Timestamp'])
+            if not context:
+                return None
+            ol = overlay or backend.caption_for_query(r['Episode'], r['Timestamp'], query)
+            url = backend.gif_url(context[0]['Episode'], context[0]['Timestamp'], context[-1]['Timestamp'], ol)
+            return context, ol, url
+
+        with ThreadPoolExecutor(max_workers=RENDER_CONCURRENCY) as executor:
+            rendered = list(executor.map(render, search_result))
 
         blocks = []
-        ol = overlay
-        for r in search_result[:min(MAX_GIFS, len(search_result))]:
-            context = backend.context_frames(r['Episode'], r['Timestamp'])
-            if len(context):
-                args = 'gifs {} | {}'.format(query, overlay) if overlay else 'gifs {}'.format(query)
-                if not overlay:
-                    ol = backend.caption_for_query(r['Episode'], r['Timestamp'], query)
-                url = backend.gif_url(
-                    context[0]['Episode'], context[0]['Timestamp'], context[-1]['Timestamp'], ol
-                )
-                blocks.append({
-                    'type': 'image',
-                    'image_url': url,
-                    'alt_text': 'GIF preview',
-                })
-                blocks.append({
-                    'type': 'actions',
-                    'elements': [
-                        {
-                            'type': 'button',
-                            'text': {'type': 'plain_text', 'text': 'Send'},
-                            'style': 'primary',
-                            'action_id': 'send_image',
-                            'value': json.dumps({
-                                'url': url,
-                                'text': ol,
-                                'args': args,
-                                'command': command,
-                            }),
-                        },
-                        {
-                            'type': 'button',
-                            'text': {'type': 'plain_text', 'text': 'Edit'},
-                            'action_id': 'edit_gif',
-                            'value': json.dumps({
-                                'args': args,
-                                'text': ol,
-                                'episode': context[0]['Episode'],
-                                'context': [i['Timestamp'] for i in context],
-                                'start': context[0]['Timestamp'],
-                                'end': context[-1]['Timestamp'],
-                                'show_text': True,
-                                'command': command,
-                            }),
-                        },
-                    ],
-                })
+        for result in rendered:
+            if result is None:
+                continue
+            context, ol, url = result
+            args = 'gifs {} | {}'.format(query, overlay) if overlay else 'gifs {}'.format(query)
+            blocks.append({
+                'type': 'image',
+                'image_url': url,
+                'alt_text': 'GIF preview',
+            })
+            blocks.append({
+                'type': 'actions',
+                'elements': [
+                    {
+                        'type': 'button',
+                        'text': {'type': 'plain_text', 'text': 'Send'},
+                        'style': 'primary',
+                        'action_id': 'send_image',
+                        'value': json.dumps({
+                            'url': url,
+                            'text': ol,
+                            'args': args,
+                            'command': command,
+                        }),
+                    },
+                    {
+                        'type': 'button',
+                        'text': {'type': 'plain_text', 'text': 'Edit'},
+                        'action_id': 'edit_gif',
+                        'value': json.dumps({
+                            'args': args,
+                            'text': ol,
+                            'episode': context[0]['Episode'],
+                            'context': [i['Timestamp'] for i in context],
+                            'start': context[0]['Timestamp'],
+                            'end': context[-1]['Timestamp'],
+                            'show_text': True,
+                            'command': command,
+                        }),
+                    },
+                ],
+            })
 
         blocks.append({
             'type': 'actions',
