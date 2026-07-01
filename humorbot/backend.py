@@ -2,11 +2,13 @@ import requests
 import json
 import re
 import logging
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from thefuzz import process
 
 MORBO_BASE_URL = 'https://morbotron.com'
 FRINK_BASE_URL = 'https://frinkiac.com'
-REQUEST_TIMEOUT = 5
+REQUEST_TIMEOUT = 10
 RENDER_TIMEOUT = 30
 DEFAULT_FONT = 'akbar'
 DEFAULT_COLOR = [255, 255, 255, 255]
@@ -16,6 +18,22 @@ log = logging.getLogger()
 
 class RequestFailedException(Exception):
     pass
+
+
+def _build_session():
+    session = requests.Session()
+    retry = Retry(
+        total=2,
+        backoff_factor=0.5,
+        status_forcelist=[500, 502, 503, 504],
+        allowed_methods=['GET'],
+        respect_retry_after_header=False,
+    )
+    session.mount('https://', HTTPAdapter(max_retries=retry))
+    return session
+
+
+_session = _build_session()
 
 
 class Frinkotron:
@@ -32,7 +50,7 @@ class Frinkotron:
             raise Exception('Wat')
 
     def search(self, key):
-        res = requests.get('{}/api/search?q={}'.format(self.base, key), timeout=REQUEST_TIMEOUT)
+        res = _session.get('{}/api/search?q={}'.format(self.base, key), timeout=REQUEST_TIMEOUT)
         if res.ok:
             return res.json()
         else:
@@ -42,7 +60,7 @@ class Frinkotron:
         url = '{base}/api/frames/{episode}/{ts}/{before}/{after}'.format(
             base=self.base, episode=episode, ts=timestamp, before=before, after=after
         )
-        res = requests.get(url, timeout=REQUEST_TIMEOUT)
+        res = _session.get(url, timeout=REQUEST_TIMEOUT)
         if res.ok:
             return res.json()
         else:
@@ -52,7 +70,7 @@ class Frinkotron:
         url = '{base}/api/caption?e={episode}&t={timestamp}'.format(
             base=self.base, episode=episode, timestamp=timestamp
         )
-        res = requests.get(url, timeout=REQUEST_TIMEOUT)
+        res = _session.get(url, timeout=REQUEST_TIMEOUT)
         if res.ok:
             return res.json()['Subtitles']
         else:
