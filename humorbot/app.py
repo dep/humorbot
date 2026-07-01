@@ -75,10 +75,13 @@ def create_bolt_app():
     # --- Command handlers ---
 
     def process_command_lazy(command, respond):
+        log.info('LAZY START process_command_lazy')
         try:
             cmd_name = command['command'].replace('/', '').strip()
             res = hb.process_command(cmd_name, command)
+            log.info('LAZY got result, calling respond')
             respond(res)
+            log.info('LAZY respond() returned')
         except Exception as e:
             log.exception('Exception processing command: {}'.format(e))
             respond({'text': 'Error processing request.', 'response_type': 'ephemeral'})
